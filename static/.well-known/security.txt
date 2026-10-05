@@ -1,0 +1,4 @@
+Contact: mailto:neupaneaayush296@gmail.com
+Expires: 2030-01-01T00:00:00.000Z
+Preferred-Languages: en, ne
+Canonical: https://aayushneupane1.com.np/.well-known/security.txt

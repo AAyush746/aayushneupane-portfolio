@@ -1,0 +1,263 @@
+@use "variables" as *;
+@use "mixins";
+
+#cv {
+  padding-top: 90px;
+  padding-bottom: 48px;
+}
+
+.cv-container {
+  max-width: 900px;
+}
+
+.cv-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  .cv-photo {
+    width: 96px;
+    height: 96px;
+    border-radius: 100px;
+    border: 2px solid #fff;
+    flex-shrink: 0;
+  }
+
+  .cv-heading {
+    flex-grow: 1;
+    min-width: 240px;
+
+    h1 {
+      font-family: "Nunito", "Roboto", "Helvetica", "Arial", sans-serif;
+      font-size: 2.25rem;
+      font-weight: 300;
+      margin: 0 0 4px;
+    }
+
+    .cv-role {
+      margin: 0 0 12px;
+      color: #c9c9c9;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+
+  .cv-print {
+    background: #fff;
+    color: #0b0b0b;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    padding: 10px 18px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+      background: transparent;
+      color: #fff;
+    }
+  }
+}
+
+.cv-contact {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-size: 0.85rem;
+
+  .cv-contact-label {
+    color: #8f8f8f;
+    margin-right: 6px;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+.board-strip--cv {
+  margin: 28px 0 8px;
+  width: 100%;
+  height: 8px;
+}
+
+.cv-body {
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fff;
+    margin: 30px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid $rule;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin: 18px 0 2px;
+  }
+
+  h3 + p {
+    margin: 0 0 8px;
+    color: #bdbdbd;
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  p {
+    margin: 0 0 10px;
+    max-width: 72ch;
+  }
+
+  ul {
+    margin: 0 0 12px;
+    padding-inline-start: 1.2em;
+  }
+
+  li {
+    margin-bottom: 5px;
+    max-width: 78ch;
+  }
+
+  strong {
+    color: #fff;
+  }
+}
+
+@media only screen and (max-width: 599px) {
+  #cv {
+    padding-top: 88px;
+  }
+
+  .cv-header .cv-print {
+    width: 100%;
+  }
+}
+
+@media print {
+  @page {
+    margin: 10mm 12mm;
+  }
+
+  html {
+    font-size: 10pt;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  #chess-background,
+  .cv-print,
+  body > header > nav,
+  #navbar-drawer,
+  body > footer .footer-sections {
+    display: none !important;
+  }
+
+  #cv {
+    padding: 0;
+    background: #fff !important;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .cv-container {
+    max-width: none;
+    padding: 0;
+  }
+
+  .cv-header {
+    .cv-photo {
+      width: 72px;
+      height: 72px;
+      border-color: #111;
+    }
+
+    h1 {
+      color: #111;
+      font-size: 1.7rem;
+      font-weight: 700;
+    }
+
+    .cv-role {
+      color: #333;
+    }
+  }
+
+  .cv-contact {
+    .cv-contact-label {
+      color: #555;
+    }
+
+    a {
+      color: #111 !important;
+    }
+  }
+
+  .board-strip--cv {
+    background-image:
+      linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%),
+      linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%);
+    opacity: 0.85;
+  }
+
+  .cv-body {
+    color: #111;
+
+    h2 {
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      margin: 14px 0 5px;
+      padding-bottom: 3px;
+      color: #000;
+      border-bottom: 1px solid #999;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 0.98rem;
+      margin: 11px 0 1px;
+      page-break-after: avoid;
+    }
+
+    h3 + p {
+      font-size: 0.78rem;
+      margin: 0 0 4px;
+      color: #444;
+    }
+
+    p {
+      font-size: 0.9rem;
+      margin: 0 0 6px;
+    }
+
+    ul {
+      margin: 0 0 6px;
+    }
+
+    li {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    strong {
+      color: #000;
+    }
+
+    a {
+      color: #111 !important;
+      text-decoration: none;
+    }
+  }
+}

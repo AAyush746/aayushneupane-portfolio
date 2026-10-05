@@ -1,0 +1,54 @@
+{%- extends "base.html" %}
+{%- import 'macros/chess.html' as macros_chess %}
+
+{%- block head %}
+{{ super() }}
+{{- macros_seo::seo(config=config, title="CV") }}
+{%- endblock head %}
+
+{%- block stylesheets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ get_url(path='/cv.css', trailing_slash=false, cachebust=true) }}" />
+{%- endblock stylesheets %}
+
+{%- block content %}
+{%- set page_data = section.extra %}
+
+{{- macros_chess::chess_dom(style="position: fixed; inset: 0; width: 100%; height: 100%; z-index: -10; pointer-events: none;") }}
+<div class="section" id="cv">
+  <div class="container cv-container">
+    <header class="cv-header">
+      {% set profile_picture = resize_image(path=page_data.profile_picture, width=120, height=120, op="fill", format="webp") %}
+      <img class="cv-photo" src="{{ profile_picture.url }}" alt="Photo of {{ page_data.name }}" />
+      <div class="cv-heading">
+        <h1>{{ page_data.name }}</h1>
+        <p class="cv-role">{{ page_data.role }}</p>
+        <ul class="cv-contact">
+          {% for social in config.extra.footer.socials %}
+          <li>
+            <span class="cv-contact-label">{{ social.label }}</span>
+            {%- if social.link %}
+            <a href="{{ social.link }}" target="_blank" rel="noopener">{{ social.value }}</a>
+            {%- else %}
+            <span>{{ social.value }}</span>
+            {%- endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <button class="cv-print" type="button" onclick="window.print()">Print / Save as PDF</button>
+    </header>
+
+    <div class="board-strip board-strip--cv" aria-hidden="true"></div>
+
+    <article class="cv-body">
+      {{ section.content | safe }}
+    </article>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+{{- macros_chess::chess_script() }}
+{% endblock scripts %}

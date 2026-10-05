@@ -1,0 +1,16 @@
+[build]
+publish = "public"
+command = "bash build.sh"
+
+[build.environment]
+ZOLA_VERSION = "0.22.1"
+
+[context.deploy-preview]
+command = "bash build.sh --base-url $DEPLOY_PRIME_URL"
+
+[[headers]]
+for = "/*"
+  [headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "SAMEORIGIN"
+Referrer-Policy = "strict-origin-when-cross-origin"
