@@ -8,7 +8,7 @@
 
 {%- block stylesheets %}
 {{ super() }}
-<link rel="stylesheet" href="{{ get_url(path='/cv.css', trailing_slash=false, cachebust=true) }}" />
+<link rel="stylesheet" href="{{ get_url(path='/cv.css', trailing_slash=false, cachebust=true) | replace(from=config.base_url, to="") }}" />
 {%- endblock stylesheets %}
 
 {%- block content %}
@@ -19,7 +19,7 @@
   <div class="container cv-container">
     <header class="cv-header">
       {% set profile_picture = resize_image(path=page_data.profile_picture, width=120, height=120, op="fill", format="webp") %}
-      <img class="cv-photo" src="{{ profile_picture.url }}" alt="Photo of {{ page_data.name }}" />
+      <img class="cv-photo" src="{{ profile_picture.url | replace(from=config.base_url, to="") }}" alt="Photo of {{ page_data.name }}" />
       <div class="cv-heading">
         <h1>{{ page_data.name }}</h1>
         <p class="cv-role">{{ page_data.role }}</p>

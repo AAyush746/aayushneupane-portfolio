@@ -34,14 +34,14 @@
     <button id="drawer-open" class="icon-button" aria-label="Open Navigation Drawer">
       {{ load_data(path="/assets/icons/hamburger-menu.svg") | safe }}
     </button>
-    <h1><a href="{{ get_url(path='/#top') }}">{{ config.title }}</a></h1>
+    <h1><a href="{{ get_url(path='/#top') | replace(from=config.base_url, to="") }}">{{ config.title }}</a></h1>
   </div>
   <div>
     {%- for link in config.extra.links %}
     {%- if link.path is matching("^http[s]?://") %}
     {%- set href = link.path %}
     {%- else %}
-    {%- set href = get_url(path=link.path) %}
+    {%- set href = get_url(path=link.path) | replace(from=config.base_url, to="") %}
     {%- endif %}
     <a class="button--big" href="{{ href }}">
       {{ link.name }}
@@ -58,7 +58,7 @@
     {%- if link.path is matching("^http[s]?://") %}
     {%- set href = link.path %}
     {%- else %}
-    {%- set href = get_url(path=link.path) %}
+    {%- set href = get_url(path=link.path) | replace(from=config.base_url, to="") %}
     {%- endif %}
     <a class="button--big" href="{{ href }}">
       {{ link.name }}

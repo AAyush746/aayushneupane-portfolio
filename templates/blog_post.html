@@ -18,13 +18,13 @@
 
 {%- block stylesheets %}
 {{ super() }}
-<link rel="stylesheet" href="{{ get_url(path='/blog.css', trailing_slash=false, cachebust=true) }}" />
+<link rel="stylesheet" href="{{ get_url(path='/blog.css', trailing_slash=false, cachebust=true) | replace(from=config.base_url, to="") }}" />
 {%- endblock stylesheets %}
 
 {%- block content %}
 
 <div class="container post">
-  <a class="back" href={{ get_url(path="/blog") }}>Back to post list</a>
+  <a class="back" href={{ get_url(path="/blog") | replace(from=config.base_url, to="") }}>Back to post list</a>
   <article>
     <header>
       <h1>{{ page.title }}</h1>

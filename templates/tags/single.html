@@ -17,7 +17,7 @@
 
 {%- block stylesheets %}
 {{ super() }}
-<link rel="stylesheet" href="{{ get_url(path='/blog.css', trailing_slash=false, cachebust=true) }}" />
+<link rel="stylesheet" href="{{ get_url(path='/blog.css', trailing_slash=false, cachebust=true) | replace(from=config.base_url, to="") }}" />
 {%- endblock stylesheets %}
 
 {%- block content %}

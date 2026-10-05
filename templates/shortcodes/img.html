@@ -15,7 +15,7 @@
   <a href="{{ path }}" class="img-fullscreen-link" target="_blank">
     <img
       src="{{ path }}"
-      srcset="{{ srcset }}"
+      srcset="{{ srcset | replace(from=config.base_url, to="") }}"
       alt="{{ caption | default(value='') }}"
       width="{{ resized.width }}"
       loading="lazy"
