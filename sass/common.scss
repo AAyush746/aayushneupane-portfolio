@@ -1,5 +1,6 @@
 @use "variables" as *;
 @use "mixins";
+@use "effects";
 
 * {
   box-sizing: border-box;
@@ -10,6 +11,25 @@ html {
 
   scroll-behavior: smooth;
   scroll-padding-top: $navbarHeight;
+
+  // Lenis drives the smooth scrolling; hand scrolling back to it.
+  &.lenis {
+    scroll-behavior: auto;
+  }
+}
+
+// Lenis layout requirements.
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 body {
@@ -24,11 +44,22 @@ body {
   background-size: 48px 48px;
   color: $textColor;
 
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-family: $fontBody;
   font-size: 0.875rem;
   font-weight: 400;
-  line-height: 1.43;
-  letter-spacing: 0.01071em;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: $fontDisplay;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 p {

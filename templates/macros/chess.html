@@ -32,9 +32,10 @@
     const SHAPES = NAMES.map((name) => new Path2D(SOURCES[name]));
 
     // Depth is layered so pieces read as small-and-far (low z) to large-and-near (high z).
-    const MIN_SIZE = 16;
-    const MAX_SIZE = 190;
-    const MAX_BLUR = 3.2;
+    const MIN_SIZE = 17;
+    const MAX_SIZE = 205;
+    const MAX_BLUR = 2.6;
+    const HOVER_RADIUS = 110;
 
     let pieces = [];
     let width = 0;
@@ -42,8 +43,9 @@
     let dpr = 1;
     let scrollY = window.scrollY || 0;
     let currentFilter = "none";
-    let mouseX = 0;
-    let mouseY = 0;
+    let canvasMouseX = -9999;
+    let canvasMouseY = -9999;
+
 
     function randomBetween(min, max) {
       return min + Math.random() * (max - min);
@@ -57,22 +59,30 @@
         z: Math.pow(Math.random(), 1.6) * 0.85 + 0.15 * ratio,
         x: Math.random(),
         y: Math.random(),
-        speed: randomBetween(0.004, 0.016),
-        sway: randomBetween(0.15, 0.5),
+        speed: randomBetween(0.0036, 0.013),
+        sway: randomBetween(0.18, 0.42),
+        bob: randomBetween(0.08, 0.16),
         phase: Math.random() * Math.PI * 2,
-        tilt: randomBetween(-7, 7),
+        tilt: randomBetween(-6, 6),
+        rot: randomBetween(-4, 4),
+        scaleVar: randomBetween(0.92, 1.08),
+        spinSpeed: randomBetween(0.12, 0.4) * (Math.random() > 0.5 ? 1 : -1),
+        flare: randomBetween(0.5, 1),
         // White pieces are solid; black pieces keep a light rim so they stay
         // readable against the dark board.
         white: Math.random() > 0.42,
+        hover: 0,
       };
     }
 
     function populate() {
-      const total = width < 700 ? 16 : width < 1200 ? 24 : 32;
+      const total = width < 700 ? 18 : width < 1200 ? 28 : 36;
       pieces = [];
       for (let i = 0; i < total; i++) {
         pieces.push(createPiece(i, total));
       }
+      // Draw far pieces first so near ones layer cleanly on top.
+      pieces.sort((a, b) => a.z - b.z);
     }
 
     function resize() {
@@ -87,66 +97,155 @@
 
     function draw(time) {
       const elapsed = reduceMotion ? 0 : time * 0.001;
-      const parallaxX = mouseX * width * 0.06;
-      const parallaxY = mouseY * height * 0.06;
 
       ctx.clearRect(0, 0, width, height);
+
+      // Hover influence - only affects pieces, not canvas view
+      if (!reduceMotion && window.matchMedia("(pointer: fine)").matches) {
+        for (let i = 0; i < pieces.length; i++) {
+          const piece = pieces[i];
+          const z = piece.z;
+          const baseSize = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * Math.pow(z, 1.7) * piece.scaleVar;
+          const drift = (piece.y - elapsed * piece.speed * z + 1) % 1;
+          const sway = Math.sin(elapsed * piece.sway + piece.phase);
+          const bob = Math.sin(elapsed * piece.bob + piece.phase * 0.7);
+          const scroll = Math.sin(scrollY * 0.0007 + piece.phase);
+
+          const x =
+            piece.x * width + sway * 16 * z + scroll * 28 * (0.35 + z);
+          const y =
+            drift * (height + baseSize * 2) -
+            baseSize +
+            scroll * 14 * (0.35 + z) +
+            bob * 6 * z;
+
+          const dx = canvasMouseX - x;
+          const dy = canvasMouseY - y;
+          const dist = Math.hypot(dx, dy);
+          const want = dist < HOVER_RADIUS * (0.6 + z * 0.8) ? 1 : 0;
+          piece.hover += (want - piece.hover) * 0.22;
+        }
+      } else {
+        for (let i = 0; i < pieces.length; i++) {
+          pieces[i].hover += (0 - pieces[i].hover) * 0.25;
+        }
+      }
 
       for (let i = 0; i < pieces.length; i++) {
         const piece = pieces[i];
         const z = piece.z;
-        const size = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * Math.pow(z, 1.7);
+        const baseSize = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * Math.pow(z, 1.7) * piece.scaleVar;
+        const hoverLift = piece.hover * 14 * (0.8 + z);
+        const size = baseSize * (1 + piece.hover * 0.26);
         const scale = size / 24;
 
         // Slow upward drift, wrapped so the field never empties out.
         const drift = (piece.y - elapsed * piece.speed * z + 1) % 1;
         const sway = Math.sin(elapsed * piece.sway + piece.phase);
-        const scroll = Math.sin(scrollY * 0.0008 + piece.phase);
+        const bob = Math.sin(elapsed * piece.bob + piece.phase * 0.7);
+        const wobble = Math.sin(elapsed * (piece.bob + 0.12) + piece.phase * 2.1);
+        const scroll = Math.sin(scrollY * 0.0007 + piece.phase);
 
         const x =
-          piece.x * width - parallaxX * z + sway * 14 * z + scroll * 26 * (0.35 + z);
+          piece.x * width + sway * 18 * z + wobble * 8 * z + scroll * 28 * (0.35 + z);
         const y =
-          drift * (height + size * 2) -
-          size -
-          parallaxY * z +
-          scroll * 18 * (0.35 + z);
-        const tilt = piece.tilt + sway * 2.5 + scroll * 1.5;
+          drift * (height + baseSize * 2) -
+          baseSize +
+          scroll * 14 * (0.35 + z) +
+          bob * 9 * z -
+          hoverLift;
 
-        const alpha = 0.05 + 0.3 * z;
-        const blur = supportsFilter && z < 0.45 ? (1 - z / 0.45) * MAX_BLUR : 0;
-        const filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none";
+        const mx = (canvasMouseX - x) / Math.max(1, size);
+        const my = (canvasMouseY - y) / Math.max(1, size);
+        const tiltX = piece.tilt + sway * 3 + scroll * 1.8 + my * (-9 * piece.hover - 4 * z);
+        const tiltY = piece.rot + mx * (6 * piece.hover + 3 * z);
+        const tiltZ = (mx * 9 + my * 4) * piece.hover;
 
-        // Set before save() so restore() below puts the same filter back.
-        if (filter !== currentFilter) {
-          ctx.filter = filter;
-          currentFilter = filter;
-        }
+        // Depth is conveyed by fading far pieces, not by blurring them, so the
+        // silhouettes stay perfectly crisp at every size.
+        const alpha = 0.4 + 0.6 * z + piece.hover * 0.26;
+        // How solid the extruded body is; distant pieces are flatter.
+        const solid = 0.35 + z * 0.65;
 
         ctx.save();
         ctx.translate(x, y + size / 2);
-        ctx.rotate((tilt * Math.PI) / 180);
+        ctx.rotate((tiltX * Math.PI) / 180);
+        ctx.rotate((tiltY * Math.PI) / 180);
+        ctx.rotate((tiltZ * Math.PI) / 180);
+
+        // Slow turn about the vertical axis: compress width and add a touch of
+        // shear so the silhouette sweeps rather than merely sliding.
+        const yaw = Math.sin(elapsed * piece.spinSpeed + piece.phase * 1.3) * (0.5 + piece.hover * 0.35);
+        const squash = 0.74 + 0.26 * Math.abs(Math.cos(yaw));
+        ctx.transform(squash, 0, Math.sin(yaw) * 0.12, 1, 0, 0);
         ctx.scale(scale, scale);
 
-        // Soft shadow keeps the piece from looking like a flat sticker.
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.fillStyle = "#000000";
+        // Light source sits up-left and shifts with the tilt.
+        const lightX = -6 + tiltY * 0.22;
+        const lightY = -11 + tiltX * 0.18;
+
+        // Crisp grounded shadow (fixed pixel blur, never scaled by the CTM).
         ctx.save();
-        ctx.translate(0.5, 1.2);
+        ctx.globalAlpha = alpha * (0.5 + piece.hover * 0.3);
+        ctx.fillStyle = "#000000";
+        ctx.shadowColor = "rgba(0,0,0,0.75)";
+        ctx.shadowBlur = 5 + z * 9 + piece.hover * 14;
+        ctx.shadowOffsetX = 2 + piece.hover * 4;
+        ctx.shadowOffsetY = 3 + z * 4 + piece.hover * 6;
         ctx.fill(piece.shape);
         ctx.restore();
 
-        if (piece.white) {
-          ctx.globalAlpha = alpha + 0.12;
-          ctx.fillStyle = "#ffffff";
+        // Extruded 3D body: crisp stacked slices drawn back-to-front. Each slice
+        // is a flat shade, so hard edges never smear into a blur.
+        const layers = 12;
+        const depthLen = (1.6 + z * 3.6) * (0.7 + piece.hover * 0.7);
+        for (let d = layers; d >= 1; d--) {
+          const f = d / layers;
+          const base = piece.white ? 236 : 34;
+          const edge = piece.white ? 150 : 6;
+          const c = Math.round(edge + (base - edge) * (1 - f));
+          ctx.globalAlpha = alpha * (0.5 + 0.4 * z);
+          ctx.fillStyle = `rgb(${c},${c},${c})`;
+          ctx.save();
+          ctx.translate(depthLen * 0.3 * f, depthLen * f);
           ctx.fill(piece.shape);
-        } else {
-          ctx.globalAlpha = alpha + 0.55;
-          ctx.fillStyle = "#0b0b0b";
-          ctx.strokeStyle = `rgba(255,255,255,${(alpha + 0.3).toFixed(3)})`;
-          ctx.lineWidth = 1.1 / scale;
-          ctx.fill(piece.shape);
-          ctx.stroke(piece.shape);
+          ctx.restore();
         }
+
+        // Top face with a rounded gradient.
+        const g = ctx.createLinearGradient(lightX - 7, lightY - 5, 5, 12);
+        if (piece.white) {
+          g.addColorStop(0, "rgba(255,255,255,1)");
+          g.addColorStop(0.45, "rgba(244,244,244,1)");
+          g.addColorStop(1, "rgba(205,205,205,1)");
+        } else {
+          g.addColorStop(0, "rgba(64,64,64,1)");
+          g.addColorStop(0.45, "rgba(26,26,26,1)");
+          g.addColorStop(1, "rgba(5,5,5,1)");
+        }
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = g;
+        ctx.fill(piece.shape);
+
+        // Specular sheen clipped to the silhouette sells the curved surface.
+        ctx.save();
+        ctx.clip(piece.shape);
+        const hi = ctx.createRadialGradient(lightX, lightY, 0.5, lightX, lightY, 13);
+        hi.addColorStop(0, piece.white ? "rgba(255,255,255,0.85)" : "rgba(175,175,175,0.6)");
+        hi.addColorStop(0.45, piece.white ? "rgba(255,255,255,0.2)" : "rgba(140,140,140,0.12)");
+        hi.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.globalAlpha = alpha * (0.75 + piece.hover * 0.5);
+        ctx.fillStyle = hi;
+        ctx.fillRect(-18, -20, 36, 42);
+        ctx.restore();
+
+        // Crisp rim light around the edge, brighter on hover.
+        ctx.globalAlpha = Math.min(1, alpha + 0.3 + piece.hover * 0.35);
+        ctx.strokeStyle = piece.white
+          ? `rgba(255,255,255,${(0.4 + piece.hover * 0.4).toFixed(3)})`
+          : `rgba(220,220,220,${(0.22 + piece.hover * 0.45).toFixed(3)})`;
+        ctx.lineWidth = (1 + piece.hover * 0.5) / scale;
+        ctx.stroke(piece.shape);
 
         ctx.restore();
       }
@@ -164,8 +263,14 @@
     }
 
     function onPointerMove(event) {
-      mouseX = (event.clientX / window.innerWidth - 0.5) * 2;
-      mouseY = (event.clientY / window.innerHeight - 0.5) * 2;
+      const rect = canvas.getBoundingClientRect();
+      canvasMouseX = event.clientX - rect.left;
+      canvasMouseY = event.clientY - rect.top;
+    }
+
+    function onPointerLeave() {
+      canvasMouseX = -9999;
+      canvasMouseY = -9999;
     }
 
     resize();
@@ -185,6 +290,7 @@
     }, { passive: true });
     if (window.matchMedia("(pointer: fine)").matches) {
       window.addEventListener("pointermove", onPointerMove, { passive: true });
+      window.addEventListener("pointerleave", onPointerLeave, { passive: true });
     }
 
     if (reduceMotion) {

@@ -2,7 +2,7 @@
 [extra]
 profile_picture = "/assets/images/profile.jpg"
 name = "Aayush Neupane"
-subtitle = "Cybersecurity Student & Chess Player"
+subtitle = "Computer Science Engineering Student & Chess Player"
 badges = [
   "1st Place · CTF",
   "3rd Place · Inter-department Chess",

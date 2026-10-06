@@ -1,0 +1,164 @@
+{%- macro motion_script() %}
+<script>
+  (function () {
+    function init() {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+
+    // ---------------------------------------------------------------------
+    // Smooth scrolling (Lenis) — skipped entirely for reduced-motion users.
+    // ---------------------------------------------------------------------
+    if (window.Lenis && !reduceMotion) {
+      const lenis = new Lenis({
+        duration: 1.1,
+        easing: function (t) {
+          return Math.min(1, 1.001 - Math.pow(2, -10 * t));
+        },
+        smoothWheel: true,
+        anchors: true,
+      });
+      window.__lenis = lenis;
+
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    }
+
+    // ---------------------------------------------------------------------
+    // Scroll reveals
+    // ---------------------------------------------------------------------
+    const revealables = document.querySelectorAll(".reveal, [data-reveal]");
+    if (revealables.length) {
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        revealables.forEach(function (el) {
+          el.classList.add("is-in");
+        });
+      } else {
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-in");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+        );
+        revealables.forEach(function (el) {
+          observer.observe(el);
+        });
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // Release hero elements once their intro finishes, so later transforms
+    // (magnetic pull, hovers) are not pinned by the animation's fill state.
+    // ---------------------------------------------------------------------
+    document.querySelectorAll(".hero-rise").forEach(function (el) {
+      el.addEventListener("animationend", function (event) {
+        if (event.animationName !== "heroRise") return;
+        el.style.animation = "none";
+        el.classList.remove("hero-rise");
+      });
+    });
+
+    // ---------------------------------------------------------------------
+    // Magnetic buttons / links
+    // ---------------------------------------------------------------------
+    if (finePointer && !reduceMotion) {
+      const magnets = document.querySelectorAll(
+        "[data-magnetic], .button--big, .cv-button, .icon-button, .socials a"
+      );
+      const strength = 0.32;
+
+      magnets.forEach(function (el) {
+        el.setAttribute("data-magnetic", "");
+        const inner = el; // transform the element itself for a crisp effect
+
+        function move(event) {
+          const rect = el.getBoundingClientRect();
+          const relX = event.clientX - (rect.left + rect.width / 2);
+          const relY = event.clientY - (rect.top + rect.height / 2);
+          el.classList.add("is-magnet");
+          inner.style.transform =
+            "translate(" + (relX * strength).toFixed(2) + "px," +
+            (relY * strength).toFixed(2) + "px)";
+        }
+
+        function reset() {
+          el.classList.remove("is-magnet");
+          inner.style.transform = "";
+        }
+
+        el.addEventListener("pointermove", move);
+        el.addEventListener("pointerleave", reset);
+        el.addEventListener("blur", reset);
+      });
+    }
+
+    // ---------------------------------------------------------------------
+    // Custom cursor
+    // ---------------------------------------------------------------------
+    if (finePointer && !reduceMotion) {
+      const cursor = document.querySelector(".cursor");
+      const dot = cursor && cursor.querySelector(".cursor__dot");
+      const ring = cursor && cursor.querySelector(".cursor__ring");
+
+      if (cursor && dot && ring) {
+        document.documentElement.classList.add("has-custom-cursor");
+
+        let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let ringPos = { x: mouse.x, y: mouse.y };
+        let visible = false;
+
+        window.addEventListener("pointermove", function (event) {
+          mouse.x = event.clientX;
+          mouse.y = event.clientY;
+          if (!visible) {
+            visible = true;
+            cursor.classList.add("is-active");
+          }
+        });
+
+        window.addEventListener("pointerdown", function () {
+          cursor.classList.add("is-hover");
+        });
+        window.addEventListener("pointerup", function () {
+          cursor.classList.remove("is-hover");
+        });
+
+        const hoverables = "a, button, [data-magnetic], input, textarea, .card";
+        document.addEventListener("pointerover", function (event) {
+          if (event.target.closest(hoverables)) cursor.classList.add("is-hover");
+        });
+        document.addEventListener("pointerout", function (event) {
+          if (event.target.closest(hoverables)) cursor.classList.remove("is-hover");
+        });
+
+        function render() {
+          ringPos.x += (mouse.x - ringPos.x) * 0.16;
+          ringPos.y += (mouse.y - ringPos.y) * 0.16;
+          dot.style.transform =
+            "translate(" + mouse.x + "px," + mouse.y + "px) translate(-50%,-50%)";
+          ring.style.transform =
+            "translate(" + ringPos.x + "px," + ringPos.y + "px) translate(-50%,-50%)";
+          requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+      }
+    }
+    }
+
+    // Deferred scripts (Lenis) run before DOMContentLoaded, so wait for it to
+    // guarantee `window.Lenis` exists.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+</script>
+{%- endmacro %}

@@ -19,17 +19,21 @@
 {{- macros_chess::chess_dom(style="position: fixed; inset: 0; width: 100%; height: 100%; z-index: -10; pointer-events: none;") }}
 <div class="splash">
   {% set profile_picture = resize_image(path=page_data.profile_picture, width=150, height=150, op="fill", format="webp") %}
-  <img class="profile-picture" src="{{ profile_picture.url | replace(from=config.base_url, to="") }}" alt="Profile image of {{ page_data.name }}" />
-  <h1>{{ page_data.name }}</h1>
-  <h2>{{ page_data.subtitle }}</h2>
+  <img class="profile-picture hero-rise" style="--rise-delay: 0.15s" src="{{ profile_picture.url | replace(from=config.base_url, to="") }}" alt="Profile image of {{ page_data.name }}" />
+  <h1 class="hero-name" aria-label="{{ page_data.name }}">
+    {%- for word in page_data.name | split(pat=" ") -%}
+    <span class="hero-word"><span class="hero-word__inner" style="--i: {{ loop.index0 }}">{{ word }}</span></span>
+    {%- endfor -%}
+  </h1>
+  <h2 class="hero-rise" style="--rise-delay: 0.62s">{{ page_data.subtitle }}</h2>
   {% if page_data.badges %}
-  <div class="badges">
+  <div class="badges hero-rise" style="--rise-delay: 0.74s">
     {% for badge in page_data.badges %}
     <span class="badge">{{ badge }}</span>
     {% endfor %}
   </div>
   {% endif %}
-  <div class="socials">
+  <div class="socials hero-rise" style="--rise-delay: 0.86s">
     {% for social in page_data.socials %}
     <div class="has-tooltip">
       <a href="{{ social.link | default(value='') }}" target="_blank" rel="noopener">
@@ -39,12 +43,12 @@
     </div>
     {% endfor %}
   </div>
-  <a class="button button--big cv-button" href="{{ get_url(path='/cv') | replace(from=config.base_url, to="") }}">View my CV</a>
+  <a class="button button--big cv-button hero-rise" style="--rise-delay: 1s" href="{{ get_url(path='/cv') | replace(from=config.base_url, to="") }}">View my CV</a>
 </div>
 
 {# about me #}
 
-<div class="section" id="about-me">
+<div class="section reveal" id="about-me">
   <div class="container">
     {{ page_data.about_me | striptags | markdown(inline=false) | safe }}
   </div>
@@ -52,7 +56,7 @@
 
 {# portfolio #}
 
-<div class="section-title" id="portfolio">
+<div class="section-title reveal" id="portfolio">
   <div class="board-strip" aria-hidden="true"></div>
   <h2>Portfolio</h2>
   <div class="board-strip board-strip--after" aria-hidden="true"></div>
@@ -60,11 +64,11 @@
 
 <div class="section">
   <div class="container">
-    <h3>My top projects</h3>
+    <h3 class="reveal">My top projects</h3>
 
     <div class="top-projects">
       {% for top_project in page_data.top_projects %}
-        <div class="card" style="background-color: {{ top_project.background }}; color: {{ top_project.color }};">
+        <div class="card reveal" style="--reveal-i: {{ loop.index0 }}; background-color: {{ top_project.background }}; color: {{ top_project.color }};">
           <div class="card-content">
             {%- if top_project.icon is matching("\.svg$") %}
             <span class="card-icon">{{ load_data(path=top_project.icon) | safe }}</span>
@@ -86,11 +90,11 @@
       {% endfor %}
     </div>
 
-    <h3>Timeline</h3>
+    <h3 class="reveal">Timeline</h3>
 
     <div class="timeline">
       {% for entry in page_data.timeline | reverse %}
-        <div class="timeline-element">
+        <div class="timeline-element reveal" style="--reveal-i: {{ loop.index0 }}">
           <span class="timeline-element-icon" style="background-color: {{ entry.background }}; color: {{ entry.foreground }};">
             {{ load_data(path=entry.icon) | safe }}
           </span>
