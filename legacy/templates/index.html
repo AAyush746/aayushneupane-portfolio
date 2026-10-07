@@ -1,0 +1,218 @@
+{%- extends "base.html" %}
+{%- import 'macros/chess.html' as macros_chess %}
+
+{%- block head %}
+{{ super() }}
+{{- macros_seo::seo(config=config, title="Home") }}
+{%- endblock head %}
+
+{%- block stylesheets %}
+{{ super() }}
+<link rel="stylesheet" href="{{ get_url(path='/homepage.css', trailing_slash=false, cachebust=true) | replace(from=config.base_url, to="") }}" />
+{%- endblock stylesheets %}
+
+{%- block content %}
+{%- set page_data = section.extra %}
+
+{# splash #}
+
+{{- macros_chess::chess_dom(style="position: fixed; inset: 0; width: 100%; height: 100%; z-index: -10; pointer-events: none;") }}
+<div class="splash">
+  {% set profile_picture = resize_image(path=page_data.profile_picture, width=150, height=150, op="fill", format="webp") %}
+  <img class="profile-picture hero-rise" style="--rise-delay: 0.15s" src="{{ profile_picture.url | replace(from=config.base_url, to="") }}" alt="Profile image of {{ page_data.name }}" />
+  <h1 class="hero-name" aria-label="{{ page_data.name }}">
+    {%- for word in page_data.name | split(pat=" ") -%}
+    <span class="hero-word"><span class="hero-word__inner" style="--i: {{ loop.index0 }}">{{ word }}</span></span>
+    {%- endfor -%}
+  </h1>
+  <h2 class="hero-rise" style="--rise-delay: 0.62s">{{ page_data.subtitle }}</h2>
+  {% if page_data.badges %}
+  <div class="badges hero-rise" style="--rise-delay: 0.74s">
+    {% for badge in page_data.badges %}
+    <span class="badge">{{ badge }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="socials hero-rise" style="--rise-delay: 0.86s">
+    {% for social in page_data.socials %}
+    <div class="has-tooltip">
+      <a href="{{ social.link | default(value='') }}" target="_blank" rel="noopener">
+        {{ load_data(path=social.icon) | safe }}
+      </a>
+      <span class="tooltip" tip-position="bottom">{{ social.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <a class="button button--big cv-button hero-rise" style="--rise-delay: 1s" href="{{ get_url(path='/cv') | replace(from=config.base_url, to="") }}"><span class="button__label">View my CV</span><span class="button__arrow" aria-hidden="true"></span></a>
+</div>
+
+{# about me #}
+
+<div class="section reveal" id="about-me">
+  <div class="container">
+    {{ page_data.about_me | striptags | markdown(inline=false) | safe }}
+  </div>
+</div>
+
+{# stack marquee #}
+
+<div class="marquee reveal" aria-hidden="true">
+  <div class="marquee__track">
+    {%- for group in range(end=2) %}
+    <span class="marquee__group">
+      {%- for item in page_data.stack_marquee %}
+      <span>{{ item }}</span><span aria-hidden="true">&#9822;</span>
+      {%- endfor %}
+    </span>
+    {%- endfor %}
+  </div>
+</div>
+
+{# portfolio #}
+
+<div class="section-title reveal" id="portfolio">
+  <div class="board-strip" aria-hidden="true"></div>
+  <h2>Portfolio</h2>
+  <div class="board-strip board-strip--after" aria-hidden="true"></div>
+</div>
+
+<div class="section">
+  <div class="container">
+    <h3 class="reveal">My top projects</h3>
+
+    <div class="project-filters reveal" role="group" aria-label="Filter projects by category">
+      {% for filter in page_data.project_filters %}
+      <button type="button" class="filter-tag{% if loop.first %} is-active{% endif %}" data-filter="{{ filter.value }}" aria-pressed="{% if loop.first %}true{% else %}false{% endif %}">{{ filter.label }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="top-projects">
+      {% for top_project in page_data.top_projects %}
+        <div class="card reveal" data-tags="{{ top_project.tags | join(sep=' ') }}" style="--reveal-i: {{ loop.index0 }}; background-color: {{ top_project.background }}; color: {{ top_project.color }};">
+          <div class="card-content">
+            {%- if top_project.icon is matching("\.svg$") %}
+            <span class="card-icon">{{ load_data(path=top_project.icon) | safe }}</span>
+            {%- else %}
+            {% set project_img = resize_image(path=top_project.icon, width=110, height=110, op="fill", format="webp") %}
+            <span class="card-icon"><img src="{{ project_img.url | replace(from=config.base_url, to="") }}" alt="{{ top_project.name }}"/></span>
+            {%- endif %}
+            <h4>{{ top_project.name }}</h4>
+            <div>
+              {{ top_project.description | striptags | markdown(inline=false) | safe }}
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="{{ top_project.link }}" target="_blank" rel="noopener" class="button">
+              <span class="button__label">{{ top_project.calltoaction }}</span><span class="button__arrow" aria-hidden="true"></span>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <h3 class="reveal">Timeline</h3>
+
+    <div class="timeline">
+      {% for entry in page_data.timeline | reverse %}
+        <div class="timeline-element reveal" style="--reveal-i: {{ loop.index0 }}">
+          <span class="timeline-element-icon" style="background-color: {{ entry.background }}; color: {{ entry.foreground }};">
+            {{ load_data(path=entry.icon) | safe }}
+          </span>
+          <div class="timeline-element-content">
+            <h4>{{ entry.title }}</h4>
+            {% if entry.subtitle %}
+            <h5>{{ entry.subtitle }}</h5>
+            {% endif %}
+            <div>
+              {{ entry.content | striptags | markdown(inline=false) | safe }}
+            </div>
+            <span class="timeline-element-date">{{ entry.date }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+{{- macros_chess::chess_script() }}
+<script>
+  (function () {
+    var grid = document.querySelector(".top-projects");
+    var tags = document.querySelectorAll(".filter-tag");
+    if (!grid || !tags.length) return;
+
+    var cards = Array.prototype.slice.call(grid.querySelectorAll(".card"));
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function applyFilter(value) {
+      // FLIP: record where every visible card is, toggle visibility, then
+      // play the delta back as a transform so cards glide to their new slot.
+      var before = new Map();
+      cards.forEach(function (card) {
+        if (!card.classList.contains("is-filtered-out")) {
+          before.set(card, card.getBoundingClientRect());
+        }
+      });
+
+      cards.forEach(function (card) {
+        var tagsOfCard = (card.getAttribute("data-tags") || "").split(/\s+/);
+        var show = value === "all" || tagsOfCard.indexOf(value) !== -1;
+        card.classList.toggle("is-filtered-out", !show);
+
+        // A card the observer never saw (it was filtered out) would otherwise
+        // come back still parked in the pre-reveal state — reveal it outright.
+        if (show && card.classList.contains("reveal")) {
+          card.classList.add("is-in");
+          setTimeout(function () {
+            card.classList.remove("reveal", "is-in");
+          }, 3000);
+        }
+      });
+
+      if (reduceMotion || !("animate" in Element.prototype)) return;
+
+      cards.forEach(function (card) {
+        if (card.classList.contains("is-filtered-out")) return;
+
+        var after = card.getBoundingClientRect();
+        var prev = before.get(card);
+
+        if (!prev) {
+          card.animate(
+            [{ opacity: 0, transform: "scale(0.94)" }, { opacity: 1, transform: "none" }],
+            { duration: 480, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }
+          );
+          return;
+        }
+
+        var dx = prev.left - after.left;
+        var dy = prev.top - after.top;
+        if (!dx && !dy) return;
+
+        card.animate(
+          [
+            { transform: "translate(" + dx + "px, " + dy + "px)" },
+            { transform: "none" },
+          ],
+          { duration: 620, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }
+        );
+      });
+    }
+
+    tags.forEach(function (tag) {
+      tag.addEventListener("click", function () {
+        tags.forEach(function (other) {
+          var active = other === tag;
+          other.classList.toggle("is-active", active);
+          other.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        applyFilter(tag.getAttribute("data-filter"));
+      });
+    });
+  })();
+</script>
+{% endblock scripts %}

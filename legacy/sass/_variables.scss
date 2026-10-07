@@ -1,0 +1,55 @@
+$background: #0b0b0b;
+$backgroundContent: #121212;
+$textColor: #ededed;
+$linkColor: #ffffff;
+$linkColorAlt: #d0d0d0;
+$navbarHeight: 64px;
+$inlineCodeBlockBackground: #262626;
+$cardColor: #1a1a1a;
+
+// Monochrome "board" tones: light square, dark square.
+$squareLight: #f2f2f2;
+$squareDark: #141414;
+$squareLightText: #111111;
+$squareDarkText: #f2f2f2;
+$rule: rgba(255, 255, 255, 0.14);
+
+// Typography: an editorial serif for display, a clean grotesk for everything
+// else. The pairing is what carries most of the "designed" feel.
+$fontDisplay: "Fraunces", "Georgia", "Times New Roman", serif;
+$fontBody: "Inter", "Roboto", "Helvetica", "Arial", sans-serif;
+$fontMono: "JetBrains Mono", "SFMono-Regular", "Menlo", "Consolas", monospace;
+
+// Motion tokens. Shared easings/durations keep every interaction coherent.
+$easeOutExpo: cubic-bezier(0.16, 1, 0.3, 1);
+$easeOutQuart: cubic-bezier(0.25, 1, 0.5, 1);
+$easeInOut: cubic-bezier(0.65, 0, 0.35, 1);
+
+// Layout tokens. One spacing scale, one measure, one container width — so
+// whitespace is decided by a system instead of per-component magic numbers.
+$containerMax: 72rem; // ~1296px at the default 18px root
+$measure: 68ch; // 60–75 characters: the comfortable reading line length
+
+:root {
+  --ease-out-expo: #{$easeOutExpo};
+  --ease-out-quart: #{$easeOutQuart};
+  --ease-in-out: #{$easeInOut};
+  --dur-fast: 180ms;
+  --dur: 420ms;
+  --dur-slow: 900ms;
+
+  // 4px-based spacing scale.
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  // Section rhythm: fluid, but consistent everywhere it is used.
+  --section-pad: clamp(3rem, 6vw, 5rem);
+  --gutter: clamp(1.25rem, 5vw, 3rem);
+}

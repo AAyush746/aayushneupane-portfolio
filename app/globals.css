@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN SYSTEM — "Chess × Cybersecurity × Engineering"
+   Near-black stage · ivory type · one electric-green accent ·
+   a whisper of gold · serif display + grotesk sans + mono.
+   ============================================================ */
+
+@theme {
+  --color-ink: #08090a;
+  --color-ink-2: #0c0d0f;
+  --color-ink-3: #131417;
+  --color-ivory: #f1eee6;
+  --color-ivory-2: #a6a296;
+  --color-ivory-3: #8f8b80;
+  --color-accent: #1fde85;
+  --color-accent-2: #12a864;
+  --color-gold: #b9975b;
+  --color-line: rgba(241, 238, 230, 0.14);
+  --color-line-2: rgba(241, 238, 230, 0.28);
+
+  --font-display: var(--font-instrument), "Times New Roman", Times, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ---------- base ---------- */
+
+html {
+  background: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-ivory);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-3);
+  border: 3px solid var(--color-ink);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ivory-3);
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+@media (pointer: coarse) {
+  *,
+  *::before,
+  *::after {
+    cursor: auto !important;
+  }
+}
+
+/* ---------- layout ---------- */
+
+.shell {
+  width: 100%;
+  max-width: 100rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+.hairline {
+  border-color: var(--color-line);
+}
+
+/* ---------- type scale ---------- */
+
+.t-display-1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(3.25rem, 11vw, 9.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.t-display-2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.t-display-3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ivory-2);
+}
+
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ivory-2);
+}
+
+.t-body {
+  font-size: clamp(1rem, 1.1vw, 1.125rem);
+  line-height: 1.65;
+  color: var(--color-ivory-2);
+}
+
+.t-num {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 11rem);
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- motion primitives ---------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.9s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
+.line-mask > span {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 1s var(--ease-out-expo);
+}
+.is-in .line-mask > span,
+.line-mask.is-in > span {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .line-mask > span {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+@media (scripting: none) {
+  .reveal,
+  .line-mask > span {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- grain ---------- */
+
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  contain: strict;
+}
+
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+  .grain::after {
+    display: none;
+  }
+}
+
+/* ---------- custom cursor ---------- */
+
+body.has-cursor,
+body.has-cursor * {
+  cursor: none !important;
+}
+
+/* ---------- links & buttons ---------- */
+
+.link-underline {
+  position: relative;
+  display: inline-block;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.btn-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.95rem 1.6rem;
+  border: 1px solid var(--color-line-2);
+  border-radius: 999px;
+  color: var(--color-ivory);
+  background: transparent;
+  transition:
+    background 0.5s var(--ease-out-expo),
+    color 0.5s var(--ease-out-expo),
+    border-color 0.5s var(--ease-out-expo);
+}
+.btn-move:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-ink);
+}
+.btn-move .arrow {
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.btn-move:hover .arrow {
+  transform: translateX(5px);
+}
